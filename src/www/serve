@@ -1,3 +1,5 @@
-#!/bin/bash
-
+#!/bin/zsh
+source $HOME/.zshrc
+roscd viana-ocu
+cd src/www
 python2 -m SimpleHTTPServer
