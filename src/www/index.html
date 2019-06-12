@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Viana GPS</title>
+    <link href="css/style.css?v=2" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="battery">
+        <div id="battery_level" class="battery-level"></div>
+    </div>
+    <div class="imu_data">
+        <div class="item">roll: <span id="roll"></span></div>
+        <div class="item">pitch: <span id="pitch"></span></div>
+        <div class="item">yaw: <span id="yaw"></span></div>
+    </div>
+    <img src="http://localhost:8080/stream?topic=/viana_camera/image_raw"
+        alt="http://localhost:8080/stream?topic=/viana_camera/image_raw">
+    <div id="google_map"></div>
+    <script src="http://static.robotwebtools.org/EventEmitter2/current/eventemitter2.min.js"></script>
+    <script src="http://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
+    <script src="js/script.js?v=2"></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCs1ef3Y3WR0mB07kzGDQ9lRBeii2GpN-E&callback=map_callback"></script>
+</body>
+
+</html>

@@ -1,0 +1,6 @@
+<launch>
+    <node type="joy_node" pkg="joy" name="joy"/>
+    <node type="server" pkg="viana-ocu" name="viana_ocu_webservice"/>
+    <node type="serve" pkg="viana-ocu" name="viana_ocu_fileserver"/>
+    <node type="web_video_server" pkg="web_video_server" name="web_video_server"/>
+</launch>

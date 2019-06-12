@@ -1,0 +1,88 @@
+#!/usr/bin/env python2
+from websocket_server import WebsocketServer
+from sensor_msgs.msg import NavSatFix, Imu
+from tf.transformations import euler_from_quaternion
+from point import Point
+from sat_filter import SatFilter
+from std_msgs.msg import Int8
+from math import degrees
+import rospy
+import threading
+import json
+
+
+class Controller:
+    def __init__(self):
+        self.server = WebsocketServer(9001)
+        t = threading.Thread(target=self.server.run_forever)
+        t.daemon = True
+        t.start()
+
+        self.subscriber = rospy.Subscriber(
+            '/piksi/navsatfix_rtk_fix',
+            NavSatFix,
+            self.callback_rtk,
+        )
+        self.subscriber = rospy.Subscriber(
+            '/piksi/navsatfix_spp',
+            NavSatFix,
+            self.callback_spp,
+        )
+        self.subscriber = rospy.Subscriber(
+            '/battery',
+            Int8,
+            self.callback_battery,
+        )
+        self.subscriber = rospy.Subscriber(
+            '/imu/data',
+            Imu,
+            self.callback_imu,
+        )
+
+    def callback_battery(self, msg):
+        self.server.send_message_to_all(json.dumps({
+            'value': msg.data,
+            'type': 'battery',
+        }))
+
+    def callback_imu(self, data):
+        orientation = data.orientation
+        roll, pitch, yaw = euler_from_quaternion([
+            orientation.x,
+            orientation.y,
+            orientation.z,
+            orientation.w,
+        ])
+        self.server.send_message_to_all(json.dumps({
+            'value': [degrees(roll), degrees(pitch), degrees(yaw)],
+            'type': 'imu',
+        }))
+
+    def callback_spp(self, msg):
+        lat = msg.latitude
+        lng = msg.longitude
+
+        self.server.send_message_to_all(json.dumps({
+            'lat': lat,
+            'lng': lng,
+            'type': 'spp',
+        }))
+
+    def callback_rtk(self, msg):
+        lat = msg.latitude
+        lng = msg.longitude
+
+        self.server.send_message_to_all(json.dumps({
+            'lat': lat,
+            'lng': lng,
+            'type': 'rtk',
+        }))
+
+    def spin(self):
+        rospy.spin()
+
+
+if __name__ == "__main__":
+    rospy.init_node('viana_ocu')
+    controller = Controller()
+    controller.spin()
