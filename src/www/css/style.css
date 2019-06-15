@@ -4,6 +4,88 @@
     top: 0;
     height: 100%;
     width: 100%;
+    background-color: #333;
+}
+
+.hui {
+    display: block;
+    width: 200px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 4px;
+    border: 1px solid rgba(10, 10, 10, 0.8);
+    background-color: rgba(10, 10, 10, 0.3);
+    z-index: 4;
+    padding: 10px;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    border-radius: 3px;
+    padding: 5px;
+}
+
+.button-reset {
+    border: 1px solid #FF0000;
+    background-color: #FF0000;
+    color: #ddd;
+}
+
+.button-send {
+    border: 1px solid #66CD00;
+    background-color: #66CD00;
+    color: #333;
+    margin-top: 10px;
+}
+
+body {
+    background-color: #333;
+}
+
+.spinner {
+    left: 50%;
+    top: 50%;
+    margin-left: -20px;
+    margin-top: -20px;
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background-color: #ddd;
+    -webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+    animation: sk-rotateplane 1.2s infinite ease-in-out;
+}
+
+@-webkit-keyframes sk-rotateplane {
+    0% {
+        -webkit-transform: perspective(120px)
+    }
+
+    50% {
+        -webkit-transform: perspective(120px) rotateY(180deg)
+    }
+
+    100% {
+        -webkit-transform: perspective(120px) rotateY(180deg) rotateX(180deg)
+    }
+}
+
+@keyframes sk-rotateplane {
+    0% {
+        transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+        -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+    }
+
+    50% {
+        transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+        -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+    }
+
+    100% {
+        transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+        -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
 }
 
 img {
@@ -26,29 +108,55 @@ img {
     top: 6px;
     width: 6px;
 }
+
 .battery {
     background-color: #fff;
     border: 2px solid #000;
     height: 32px;
     position: fixed;
-    top: 345px;
-    left: 15px;
+    top: 20px;
+    right: 30px;
+    transform: rotate(-180deg) scale(1.2);
     opacity: 0.75;
     width: 100px;
     z-index: 999;
 }
+
 .battery .battery-level {
     background-color: #666;
     height: 100%;
 }
+
 .battery .battery-level.high {
     background-color: #66CD00;
 }
+
 .battery .battery-level.medium {
     background-color: #FCD116;
 }
+
 .battery .battery-level.low {
     background-color: #FF3333;
+}
+
+.north_line {
+    display: block;
+    position: fixed;
+    z-index: 3;
+    height: 100%;
+    background-color: rgba(255, 51, 51, 0.1);
+    width: 2px;
+    left: calc(50% - 1px);
+}
+
+.east_line {
+    display: block;
+    position: fixed;
+    z-index: 3;
+    height: 2px;
+    background-color: rgba(255, 51, 51, 0.1);
+    width: 100%;
+    top: calc(50% - 1px);
 }
 
 .imu_data {
@@ -57,6 +165,7 @@ img {
     top: 260px;
     left: 13px;
     line-height: 1.5;
-    border-left: 2px solid #222;
+    border-left: 2px solid #ddd;
+    color: #ddd;
     padding-left: 10px;
 }

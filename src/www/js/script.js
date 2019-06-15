@@ -1,12 +1,63 @@
 var states = {
     'map': null,
-    'marker': null,
-    'marker_spp': null,
-    'ready': false,
+    'robot_marker': null,
+    'target_marget': null,
     'polyline': null,
-    'path': [],
+    'target_path': [],
+    'point_radius': 1,
     'base_position': [36.3236571617, 50.0394061638],
+    'map_style': [
+        {
+            "stylers": [
+                {
+                    "hue": "#ff1a00"
+                },
+                {
+                    "invert_lightness": true
+                },
+                {
+                    "saturation": -100
+                },
+                {
+                    "lightness": 33
+                },
+                {
+                    "gamma": 0.5
+                }
+            ]
+        },
+        {
+            "featureType": "water",
+            "elementType": "geometry",
+            "stylers": [
+                {
+                    "color": "#2D333C"
+                }
+            ]
+        }
+    ],
+    'circles': [],
 }
+
+$(document).ready(function() {
+    $.getScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyCs1ef3Y3WR0mB07kzGDQ9lRBeii2GpN-E&callback=map_callback", function(){
+        $(".container").fadeIn().promise().then(function() {
+            setTimeout(function() {
+                $(".spinner").fadeOut()
+            }, 1000);
+        });
+    });
+
+    $(".button-reset").click(function() {
+        states.target_path = [];
+        updateUserPath();
+        for (var i = 0;i < states.circles.length;i++) 
+            states.circles[i].setMap(null);        
+        
+        states.circles = [];
+        states.target_marget.setMap(null);
+    });
+});
 
 function setBatteryLevel(level) {
     document.getElementById("battery_level").style.width = level + "%";
@@ -18,183 +69,86 @@ function setBatteryLevel(level) {
     else document.getElementById("battery_level").classList.add('low');
 }
 
+function rotateIcon(marker, angle) {
+    angle = -angle;
+    angle = angle - 90;    
+    var icon = marker.getIcon();
+    icon.rotation = angle;
+    marker.setIcon(icon);
+}
+
+function updateUserPath() {
+    for (var i=0;i<states.target_path.length;i++) {
+        var point = states.target_path[i];                
+    }
+    states.polyline.setPath(states.target_path);  
+}
+
 function map_callback() {
+    var init_position = new google.maps.LatLng(states.base_position[0], states.base_position[1]);
+
     var mapProp = {
-        center: new google.maps.LatLng(states.base_position[0], states.base_position[1]),
+        center: init_position,
         disableDefaultUI: true,
         zoom: 20,
-        styles: [
-            {
-                "elementType": "geometry",
-                "stylers": [
-                    {
-                        "hue": "#ff4400"
-                    },
-                    {
-                        "saturation": -68
-                    },
-                    {
-                        "lightness": -4
-                    },
-                    {
-                        "gamma": 0.72
-                    }
-                ]
-            },
-            {
-                "featureType": "road",
-                "elementType": "labels.icon"
-            },
-            {
-                "featureType": "landscape.man_made",
-                "elementType": "geometry",
-                "stylers": [
-                    {
-                        "hue": "#0077ff"
-                    },
-                    {
-                        "gamma": 3.1
-                    }
-                ]
-            },
-            {
-                "featureType": "water",
-                "stylers": [
-                    {
-                        "hue": "#00ccff"
-                    },
-                    {
-                        "gamma": 0.44
-                    },
-                    {
-                        "saturation": -33
-                    }
-                ]
-            },
-            {
-                "featureType": "poi.park",
-                "stylers": [
-                    {
-                        "hue": "#44ff00"
-                    },
-                    {
-                        "saturation": -23
-                    }
-                ]
-            },
-            {
-                "featureType": "water",
-                "elementType": "labels.text.fill",
-                "stylers": [
-                    {
-                        "hue": "#007fff"
-                    },
-                    {
-                        "gamma": 0.77
-                    },
-                    {
-                        "saturation": 65
-                    },
-                    {
-                        "lightness": 99
-                    }
-                ]
-            },
-            {
-                "featureType": "water",
-                "elementType": "labels.text.stroke",
-                "stylers": [
-                    {
-                        "gamma": 0.11
-                    },
-                    {
-                        "weight": 5.6
-                    },
-                    {
-                        "saturation": 99
-                    },
-                    {
-                        "hue": "#0091ff"
-                    },
-                    {
-                        "lightness": -86
-                    }
-                ]
-            },
-            {
-                "featureType": "transit.line",
-                "elementType": "geometry",
-                "stylers": [
-                    {
-                        "lightness": -48
-                    },
-                    {
-                        "hue": "#ff5e00"
-                    },
-                    {
-                        "gamma": 1.2
-                    },
-                    {
-                        "saturation": -23
-                    }
-                ]
-            },
-            {
-                "featureType": "transit",
-                "elementType": "labels.text.stroke",
-                "stylers": [
-                    {
-                        "saturation": -64
-                    },
-                    {
-                        "hue": "#ff9100"
-                    },
-                    {
-                        "lightness": 16
-                    },
-                    {
-                        "gamma": 0.47
-                    },
-                    {
-                        "weight": 2.7
-                    }
-                ]
-            }
-        ],
+        styles: states.map_style,        
     };
     var map = new google.maps.Map(document.getElementById("google_map"), mapProp);
     states.map = map;
-    states.ready = true;
-    var init_position = new google.maps.LatLng(36.323643, 50.039436);
-    var marker = new google.maps.Marker({
+    
+    states.robot_marker = new google.maps.Marker({
         position: init_position,
         map: map,
+        icon: {
+            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+            fillColor: '#ce93d8',
+            fillOpacity: .6,
+            strokeWeight: 0,
+            scale: 5,           
+            rotation: -90, 
+            anchor: new google.maps.Point(0, -3),
+        },
     });
-    marker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png')
-    var marker_spp = new google.maps.Marker({
-        position: init_position,
+
+    states.polyline = new google.maps.Polyline({        
+        strokeColor: '#ffa726',
+        strokeOpacity: 0.6,
+        strokeWeight: 1,
         map: map,
-    });
-    marker_spp.setIcon('http://maps.google.com/mapfiles/ms/icons/blue-dot.png')
-    var base_marker = new google.maps.Marker({
-        position: new google.maps.LatLng(states.base_position[0], states.base_position[1]),
-        map: map,
-    });
-    base_marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
-    states.marker = marker;
-    states.marker_spp = marker_spp;
+    });    
+    
     var target_marget = new google.maps.Marker({
         position: init_position,
         map: map,
+        icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: '#bf360c',
+            fillOpacity: .6,
+            strokeWeight: 0,
+            scale: 5,           
+            rotation: -90, 
+        },
     });
-    target_marget.setIcon('http://maps.google.com/mapfiles/ms/icons/pink-dot.png')
     states.target_marget = target_marget;
 
     google.maps.event.addListener(map, 'click', function (event) {
-        target_marget.setPosition(event.latLng);
-        if (states.connected) {
-            states.socket.send(JSON.stringify(event.latLng));
-        }
+        const position = event.latLng;
+        states.target_marget.setPosition(position);
+        states.target_marget.setMap(states.map);
+        states.target_path.push(position);        
+        updateUserPath();
+
+        var pointCircle = new google.maps.Circle({
+            strokeColor: '#fff176',
+            strokeOpacity: 0.1,
+            strokeWeight: 2,
+            fillColor: '#fdd835',
+            fillOpacity: 0.1,
+            map: states.map,
+            center: position,
+            radius: states.point_radius
+        });
+        states.circles.push(pointCircle);
     });
 }
 
@@ -203,16 +157,16 @@ function set_marker(data) {
         return;
     var position = new google.maps.LatLng(data.lat, data.lng);
     if (data.type == 'enu')
-        states.marker_spp.setPosition(position);
-    else {
-        states.marker.setPosition(position);
-    }
+        states.enu_marker.setPosition(position);
+    else
+        states.robot_marker.setPosition(position);    
 }
 
 function setImuData(data) {
     document.getElementById("roll").innerHTML = data[0].toFixed(2);
     document.getElementById("pitch").innerHTML = data[1].toFixed(2);
     document.getElementById("yaw").innerHTML = data[2].toFixed(2);
+    rotateIcon(states.robot_marker, data[2].toFixed(2));
 }
 
 function connect() {
@@ -222,9 +176,9 @@ function connect() {
         console.log("connection has been closed")
         states.connected = false;
 
-        setTimeout(function () {
-            connect();
-        }, 1000)
+        // setTimeout(function () {
+        //     connect();
+        // }, 1000)
     }
 
     socket.onopen = function () {
