@@ -37,10 +37,11 @@ var states = {
         }
     ],
     'circles': [],
+    'google_api_key': '',
 }
 
 $(document).ready(function() {
-    $.getScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyCs1ef3Y3WR0mB07kzGDQ9lRBeii2GpN-E&callback=map_callback", function(){
+    $.getScript("https://maps.googleapis.com/maps/api/js?key="+states.google_api_key+"&callback=map_callback", function(){
         $(".container").fadeIn().promise().then(function() {
             setTimeout(function() {
                 $(".spinner").fadeOut()
