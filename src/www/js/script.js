@@ -3,8 +3,9 @@ var states = {
     'marker': null,
     'marker_spp': null,
     'ready': false,
-    'circle': null,
-    'base_position': [36.32366982194707, 50.03928838549518],
+    'polyline': null,
+    'path': [],
+    'base_position': [36.3236571617, 50.0394061638],
 }
 
 function setBatteryLevel(level) {
@@ -180,22 +181,20 @@ function map_callback() {
         map: map,
     });
     base_marker.setIcon('http://maps.google.com/mapfiles/ms/icons/green-dot.png')
-    var circle = new google.maps.Circle({
-        strokeColor: "#FF0000",
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: "#FF0000",
-        fillOpacity: 0.35,
-        map: map,
-        center: init_position,
-        radius: 5
-    });
     states.marker = marker;
     states.marker_spp = marker_spp;
-    states.circle = circle;
+    var target_marget = new google.maps.Marker({
+        position: init_position,
+        map: map,
+    });
+    target_marget.setIcon('http://maps.google.com/mapfiles/ms/icons/pink-dot.png')
+    states.target_marget = target_marget;
 
-    google.maps.event.addListener(map, 'click', function(event) {
-        alert(event.latLng);
+    google.maps.event.addListener(map, 'click', function (event) {
+        target_marget.setPosition(event.latLng);
+        if (states.connected) {
+            states.socket.send(JSON.stringify(event.latLng));
+        }
     });
 }
 
@@ -203,24 +202,14 @@ function set_marker(data) {
     if (!states.ready)
         return;
     var position = new google.maps.LatLng(data.lat, data.lng);
-    if (data.type == 'spp')
+    if (data.type == 'enu')
         states.marker_spp.setPosition(position);
-    else
+    else {
         states.marker.setPosition(position);
-}
-
-function set_circle(data) {
-    if (!states.ready)
-        return;
-    if (data.type != 'rtk')
-        return;
-    var position = new google.maps.LatLng(data.lat, data.lng);
-    states.circle.setCenter(position);
-    states.circle.setRadius(data.radius);
+    }
 }
 
 function setImuData(data) {
-    console.log(data);
     document.getElementById("roll").innerHTML = data[0].toFixed(2);
     document.getElementById("pitch").innerHTML = data[1].toFixed(2);
     document.getElementById("yaw").innerHTML = data[2].toFixed(2);
@@ -231,16 +220,19 @@ function connect() {
 
     socket.onclose = function () {
         console.log("connection has been closed")
+        states.connected = false;
 
-        setTimeout(function() {
+        setTimeout(function () {
             connect();
         }, 1000)
     }
-    
+
     socket.onopen = function () {
         console.log("connection has been opened")
+        states.connected = true;
+        states.socket = socket;
     }
-    
+
     socket.onmessage = function (msg) {
         var data = JSON.parse(msg.data);
         if (data.type == 'battery') {
@@ -250,7 +242,6 @@ function connect() {
             setImuData(data.value);
             return;
         }
-        set_circle(data);
         set_marker(data);
     }
 }
